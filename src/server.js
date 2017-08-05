@@ -65,7 +65,7 @@ const afterDBConnection = function(db, config) {
 
 	var staticMiddleware = null;
 	if (glob.sync('./public/**').length)
-		staticMiddleware(path.resolve('./public'));
+		staticMiddleware = serve(path.resolve('./public'));
 
 
 	if (typeof config.beforeMiddleware === 'function')
@@ -98,7 +98,8 @@ const afterDBConnection = function(db, config) {
 		config.beforeRoute(app, db);
 	app.use(router.routes());
 	app.use(router.allowedMethods());
-	app.use(staticMiddleware);
+	if (staticMiddleware)
+		app.use(staticMiddleware);
 
 	if (typeof config.afterMiddleware === 'function')
 		config.afterMiddleware(app, db);
