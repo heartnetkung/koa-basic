@@ -16,7 +16,7 @@
     "koa-gzip": "^0.1.0",
     "koa-logger": "^1.3.0",
     "koa-router": "^5.2.3",
-    "koa-send": "^2.0.2",
+    "koa-static": "^2.0.2",
     "lodash": "*",
     "mongodb": "~2.0",
     "monkii": "heartnetkung/monkii",
