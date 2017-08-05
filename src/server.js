@@ -12,6 +12,7 @@ const gzip = require('koa-gzip');
 const glob = require('glob');
 const path = require('path');
 const _ = require('lodash');
+const serve = require('koa-static');
 
 
 const afterDBConnection = function(db, config) {
@@ -62,6 +63,11 @@ const afterDBConnection = function(db, config) {
 	}
 
 
+	var staticMiddleware = null;
+	if (glob.sync('./public/**').length)
+		staticMiddleware(path.resolve('./public'));
+
+
 	if (typeof config.beforeMiddleware === 'function')
 		config.beforeMiddleware(app, db);
 	app.use(gzip());
@@ -92,6 +98,7 @@ const afterDBConnection = function(db, config) {
 		config.beforeRoute(app, db);
 	app.use(router.routes());
 	app.use(router.allowedMethods());
+	app.use(staticMiddleware);
 
 	if (typeof config.afterMiddleware === 'function')
 		config.afterMiddleware(app, db);
