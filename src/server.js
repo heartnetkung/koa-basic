@@ -126,11 +126,23 @@ module.exports = function(config) {
 		httpPort: 3000,
 		keys: ['abcde', 'fghij']
 	}, config);
-	const db = require('monkii')(config.db);
 	console.log(`starting server ${new Date()} port: ${config.httpPort}`);
 	console.log('connecting to database...');
-	db.driver._emitter.once('open', function() {
-		console.log('connected to the database.');
-		afterDBConnection(db, config);
+	
+	return new Promise(function(res, rej) {
+		try {
+			const db = require('monkii')(config.db);
+			db.driver._emitter.once('open', function() {
+				console.log('connected to the database.');
+				try {
+					afterDBConnection(db, config);
+					return res(db);
+				} catch (e) {
+					return rej(e);
+				}
+			});
+		} catch (e) {
+			return rej(e);
+		}
 	});
 };
