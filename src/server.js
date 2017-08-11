@@ -18,7 +18,7 @@ const serve = require('koa-static');
 const afterDBConnection = function(db, config) {
 
 
-	var appFiles = glob.sync('./node_app/controllers/*.js');
+	var appFiles = glob.sync(config.path + '/node_app/controllers/*.js');
 	if (appFiles.length) {
 		router.use('/appv1', session({
 			key: 'koa.sid.appv1',
@@ -33,7 +33,7 @@ const afterDBConnection = function(db, config) {
 	}
 
 
-	var adminFiles = glob.sync('./node_admin/controllers/*.js');
+	var adminFiles = glob.sync(config.path + '/node_admin/controllers/*.js');
 	if (adminFiles.length) {
 		router.use('/adminv1', session({
 			key: 'koa.sid.adminv1',
@@ -48,7 +48,7 @@ const afterDBConnection = function(db, config) {
 	}
 
 
-	var staffFiles = glob.sync('./node_staff/controllers/*.js')
+	var staffFiles = glob.sync(config.path + '/node_staff/controllers/*.js')
 	if (staffFiles.length) {
 		router.use('/staffv1', session({
 			key: 'koa.sid.staffv1',
@@ -64,7 +64,7 @@ const afterDBConnection = function(db, config) {
 
 
 	var staticMiddleware = null;
-	if (glob.sync('./public/**').length)
+	if (glob.sync(config.path + '/public/**').length)
 		staticMiddleware = serve(path.resolve('./public'));
 
 
@@ -128,7 +128,7 @@ module.exports = function(config) {
 	}, config);
 	console.log(`starting server ${new Date()} port: ${config.httpPort}`);
 	console.log('connecting to database...');
-	
+
 	return new Promise(function(res, rej) {
 		try {
 			const db = require('monkii')(config.db);
