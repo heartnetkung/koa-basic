@@ -1,89 +1,53 @@
-const { Validator } = require('jsonschema');
-const v = new Validator();
+const { scrypt, Router, schema } = require('koa-basic');
+const hash = scrypt.hash;
+const { validate } = schema;
+const router = module.exports = Router();
 
-module.exports = {
-	basicLabel: {
-		type: 'string',
-		minLength: 1,
-		maxLength: 50,
-		pattern: '^[ _0-9ก-๙a-zA-Z\'\\.\\-,\\(\\)]*$'
-	},
-	longLabel: {
-		type: 'string',
-		minLength: 1,
-		maxLength: 1000,
-		pattern: '^[ _0-9ก-๙a-zA-Z\'\\.\\-,\\(\\)]*$'
-	},
-	ignorableLabel: {
-		type: 'string',
-		minLength: 0,
-		maxLength: 50,
-		pattern: '^[ _0-9ก-๙a-zA-Z\'\\.\\-,\\(\\)]*$'
-	},
-	adminUsername: {
-		type: 'string',
-		minLength: 6,
-		maxLength: 50,
-		pattern: '^[_0-9a-zA-Z]*$'
-	},
-	adminPassword: {
-		type: 'string',
-		minLength: 6,
-		maxLength: 50,
-		pattern: '^[_0-9a-zA-Z]*$'
-	},
-	username: {
-		type: 'string',
-		minLength: 4,
-		maxLength: 50,
-		pattern: '^[_0-9a-zA-Z@\\.]*$'
-	},
-	integer: {
-		type: 'string',
-		pattern: '^\\d*$',
-		maxLength: 9,
-		minLength: 1
-	},
-	negativeInteger: {
-		type: 'string',
-		pattern: '^-?\\d*$',
-		maxLength: 9,
-		minLength: 1
-	},
-	humanName: {
-		type: 'string',
-		minLength: 3,
-		maxLength: 50,
-		pattern: '^[ ก-๏a-zA-Z\'\\.\\-]*$'
-	},
-	mongoId: {
-		type: 'string',
-		pattern: '^[0-9a-f]{24}$'
-	},
-	boolean: {
-		type: 'string',
-		pattern: '^true$|^false$'
-	},
-	date: {
-		type: 'string',
-		pattern: '^\\d{4}-\\d\\d?-\\d\\d?$'
-	},
-	validate: function(obj, schema) {
-		var result = validate(obj, schema).errors;
-		if (!result.length)
-			return false;
-		var map = _.groupBy(result, 'property');
-		for (var property in map) {
-			var group = map[property];
-			for (var i = 0, ii = group.length; i < ii; i++)
-				group[i] = group[i].message;
-		}
-		return map;
-	},
-	escapeMongoField: function(name) {
-		var entityMap = { '&': '&amp;', '$': '&#36;', '.': '&#46;' };
-		return String(name).replace(/[$&.]/, function(s) {
-			return entityMap[s];
-		});
+
+router.use('/staff', function*(next) {
+	if (this.session.users_type === 'staff')
+		return yield next;
+	this.error('neet to be a staff', 'DEV: go to /appv1/login', 403);
+});
+
+
+router.put('/staff/users', function*() {
+	var input = this.request.body;
+	var error = validate(input, addUserSchema);
+	if (error)
+		return this.error('validation error', error);
+	if (input.password !== input.retype_password)
+		return this.error('retype password is incorrect');
+
+	var password = yield hash(input.password);
+	yield this.db.get('users').insert({
+		username: input.username,
+		type: input.type,
+		password
+	});
+	this.success();
+});
+const addUserSchema = {
+	type: 'object',
+	required: ['username', 'password', 'retype_password', 'type'],
+	properties: {
+		username: schema.adminUsername,
+		password: schema.adminPassword,
+		retype_password: schema.adminPassword,
+		type: { type: 'string', enum: ['staff', 'normal'] }
 	}
 };
+
+
+router.get('/staff/users', function*() {
+	this.body = yield this.db.get('users').find({}, 'username type');
+});
+
+
+
+router.delete('/staff/users/:users_id', function*() {
+	var success = yield this.db.get('users').remove({ _id: this.params.users_id, username: { $ne: 'heartnetkung' } });
+	if (!success)
+		return this.error('user not found');
+	this.success();
+});
