@@ -13,6 +13,7 @@ const glob = require('glob');
 const path = require('path');
 const _ = require('lodash');
 const serve = require('koa-static');
+const fs = require('fs');
 
 
 const afterDBConnection = function(db, config) {
@@ -100,6 +101,20 @@ const afterDBConnection = function(db, config) {
 	app.use(router.allowedMethods());
 	if (staticMiddleware)
 		app.use(staticMiddleware);
+
+	try {
+		var indexHtml = fs.readFileSync(path.join(config.path, '/public/index.html'));
+		if (indexHtml)
+			app.use(function*(next) {
+				if (!this.body && !/appv1|staffv1|adminv1|\.[a-zA-Z]{2,4}$/.test(this.url)) {
+					this.body = indexHtml || null;
+					this.type = 'text/html';
+				}
+				yield next;
+			});
+	} catch (e) {
+		console.log('warning /public/index.html is not found. spa redirect is disabled');
+	}
 
 	if (typeof config.afterMiddleware === 'function')
 		config.afterMiddleware(app, db);
