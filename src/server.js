@@ -123,23 +123,19 @@ const afterDBConnection = function(db, config) {
 
 
 	cleanup(function(exitCode, signal) {
-		console.log('server closing');
-		httpServer.close();
-		httpServer.on('close', function() {
-			console.log('server closed');
-			db.close(function(){
-				console.log(arguments);
-				cleanup.uninstall();
+		console.log('closing');
+		if (signal) {
+			httpServer.close();
+			httpServer.on('close', function() {
+				db.close(function() {
+					console.log('server and db closed');
+					process.kill(process.pid, signal);
+				});
 			});
-		});
-		nodeCleanup.uninstall();
-		return false;
+			cleanup.uninstall();
+			return false;
+		}
 	});
-
-	// process.on('SIGTERM', function() {
-	// 	console.log('server closing');
-	// 	httpServer.close();
-	// });
 
 };
 
