@@ -14,6 +14,7 @@ const path = require('path');
 const _ = require('lodash');
 const serve = require('koa-static');
 const fs = require('fs');
+const cleanup = require('node-cleanup');
 
 
 const afterDBConnection = function(db, config) {
@@ -121,15 +122,25 @@ const afterDBConnection = function(db, config) {
 	var httpServer = http.createServer(app.callback()).listen(config.httpPort);
 
 
-	process.on('SIGTERM', function() {
+	cleanup(function(exitCode, signal) {
 		console.log('server closing');
 		httpServer.close();
-		agenda.shutdown();
+		httpServer.on('close', function() {
+			console.log('server closed');
+			db.close(function(){
+				console.log(arguments);
+				cleanup.uninstall();
+			});
+		});
+		nodeCleanup.uninstall();
+		return false;
 	});
-	httpServer.on('close', function() {
-		console.log('server closed');
-		db.close();
-	});
+
+	// process.on('SIGTERM', function() {
+	// 	console.log('server closing');
+	// 	httpServer.close();
+	// });
+
 };
 
 

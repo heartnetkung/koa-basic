@@ -20,6 +20,7 @@
     "lodash": "*",
     "mongodb": "~2.0",
     "monkii": "heartnetkung/monkii",
+    "node-cleanup": "^2.1.2",
     "raw-body": "^2.1.4",
     "scrypt": "^5.4.1"
   }
