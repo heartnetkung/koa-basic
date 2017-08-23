@@ -81,6 +81,7 @@ module.exports = {
 			for (var i = 0, ii = group.length; i < ii; i++)
 				group[i] = group[i].message;
 		}
+		map.__uitext = stringify(map);
 		return map;
 	},
 	escapeMongoField: function(name) {
@@ -90,3 +91,14 @@ module.exports = {
 		});
 	}
 };
+const stringify = (a) => {
+	var lines = [];
+	for (var x in a) {
+		if (!Array.isArray(a[x]))
+			lines.push(`${x}: ${a[x]}`);
+		else
+			for (var y of a[x])
+				lines.push(`${x}: ${y}`);
+	}
+	return lines.join('<br/>').replace(/instance:|instance\./g, '');
+}
