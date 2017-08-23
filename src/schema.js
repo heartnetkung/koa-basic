@@ -1,6 +1,6 @@
 const { Validator } = require('jsonschema');
 const v = new Validator();
-const _=require('lodash');
+const _ = require('lodash');
 
 module.exports = {
 	basicLabel: {
@@ -70,6 +70,8 @@ module.exports = {
 		pattern: '^\\d{4}-\\d\\d?-\\d\\d?$'
 	},
 	validate: function(obj, schema) {
+		if (typeof obj === 'undefined')
+			obj = null;
 		var result = v.validate(obj, schema).errors;
 		if (!result.length)
 			return false;
