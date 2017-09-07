@@ -15,6 +15,12 @@ module.exports = {
 		maxLength: 1000,
 		pattern: '^[ _0-9ก-๙a-zA-Z\'\\.\\-,\\(\\)]*$'
 	},
+	longMultilineLabel: {
+		type: 'string',
+		minLength: 1,
+		maxLength: 1000,
+		pattern: '^[ _0-9ก-๙a-zA-Z\'\\.\\-,\\(\\)\n]*$'
+	},
 	ignorableLabel: {
 		type: 'string',
 		minLength: 0,
