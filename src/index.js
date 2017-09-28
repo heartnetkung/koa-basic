@@ -6,3 +6,4 @@ exports.Router = require('koa-router');
 exports.monkii = require('monkii');
 exports.koa = require('koa');
 exports.body = require('koa-bodyparser');
+exports.globalVar = require('./globalvar');
