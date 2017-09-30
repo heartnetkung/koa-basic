@@ -67,7 +67,7 @@ const afterDBConnection = function(db, config) {
 
 	var staticMiddleware = null;
 	if (glob.sync(config.path + '/public/**').length)
-		staticMiddleware = serve(path.resolve('./public'));
+		staticMiddleware = serve(config.path + '/public');
 
 
 	if (typeof config.beforeMiddleware === 'function')
